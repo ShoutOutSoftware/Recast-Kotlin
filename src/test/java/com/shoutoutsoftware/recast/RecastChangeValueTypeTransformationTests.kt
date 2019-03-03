@@ -1,5 +1,6 @@
 package com.shoutoutsoftware.recast
 
+import com.shoutoutsoftware.recast.callback.RecastCallback
 import com.shoutoutsoftware.recast.utils.*
 import junit.framework.TestCase.assertTrue
 import org.junit.Assert.assertEquals
@@ -17,7 +18,7 @@ class RecastChangeValueTypeTransformationTests {
     fun testEmptyMapTransformation() {
         val map = HashMap<String, Any?>()
         var numberOfCallbacks = 0
-        Recast().transformByChangingValueTypes(map, callback = { _, _ ->
+        Recast().transformByChangingValueTypes(map, callback = RecastCallback { _, _ ->
             numberOfCallbacks++
         })
         assertEquals(numberOfCallbacks, 0)
@@ -28,7 +29,7 @@ class RecastChangeValueTypeTransformationTests {
         val map = hashMapOf<String, Any?>("key" to "value")
         var numberOfCallbacks = 0
 
-        Recast().transformByChangingValueTypes(map, callback = { newMap, keyAltered ->
+        Recast().transformByChangingValueTypes(map, callback = RecastCallback { newMap, keyAltered ->
             assertFalse(newMap[keyAltered] is String)
             numberOfCallbacks++
         })
@@ -49,7 +50,7 @@ class RecastChangeValueTypeTransformationTests {
         map["mapWithNull"] = hashMapOf("null" to null)
         var numberOfCallbacks = 0
 
-        Recast().transformByChangingValueTypes(map, callback = { newMap, key ->
+        Recast().transformByChangingValueTypes(map, callback = RecastCallback { newMap, key ->
 
             ifKey(
                 key,

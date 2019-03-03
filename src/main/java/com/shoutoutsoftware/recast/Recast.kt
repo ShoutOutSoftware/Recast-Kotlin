@@ -1,12 +1,11 @@
 package com.shoutoutsoftware.recast
 
+import com.shoutoutsoftware.recast.callback.RecastCallback
 import com.shoutoutsoftware.recast.exceptions.NonStringKeyException
 import com.shoutoutsoftware.recast.transformers.KeyValueRemover
 import com.shoutoutsoftware.recast.transformers.Transformer
 import com.shoutoutsoftware.recast.transformers.ValueNullifyer
 import com.shoutoutsoftware.recast.transformers.ValueTypeChanger
-import com.shoutoutsoftware.recast.utils.Callback
-import java.util.*
 
 /**
  * Created on 24 September 2017
@@ -15,13 +14,13 @@ import java.util.*
 
 class Recast {
 
-    fun transformByRemovingKeys(map: HashMap<String, Any?>, callback: Callback) = transform(map, callback, KeyValueRemover())
+    fun transformByRemovingKeys(map: HashMap<String, Any?>, callback: RecastCallback) = transform(map, callback, KeyValueRemover())
 
-    fun transformByChangingValueTypes(map: HashMap<String, Any?>, callback: Callback) = transform(map, callback, ValueTypeChanger())
+    fun transformByChangingValueTypes(map: HashMap<String, Any?>, callback: RecastCallback) = transform(map, callback, ValueTypeChanger())
 
-    fun transformByNullifyingValues(map: HashMap<String, Any?>, callback: Callback) = transform(map, callback, ValueNullifyer())
+    fun transformByNullifyingValues(map: HashMap<String, Any?>, callback: RecastCallback) = transform(map, callback, ValueNullifyer())
 
-    private fun transform(map: HashMap<String, Any?>, callback: Callback, transformer: Transformer) {
+    private fun transform(map: HashMap<String, Any?>, callback: RecastCallback, transformer: Transformer) {
         if (!map.isEmpty()) {
             for (key in map.keys) {
                 transformValue(forKey = key, inMap = map, callback = callback, transformer = transformer)
@@ -29,17 +28,17 @@ class Recast {
         }
     }
 
-    private fun transformValue(forKey: String, inMap: HashMap<String, Any?>, callback: Callback, transformer: Transformer) {
+    private fun transformValue(forKey: String, inMap: HashMap<String, Any?>, callback: RecastCallback, transformer: Transformer) {
         val newMap = HashMap(inMap)
         transformer.transform(newMap, forKey)
-        callback(newMap, forKey)
+        callback.accept(newMap, forKey)
 
         val value = inMap[forKey]
         if (isAStringKeyHashMap(value)) {
             @Suppress("UNCHECKED_CAST")
-            transform(value as HashMap<String, Any?>, callback = { nmp, rmk ->
+            transform(value as HashMap<String, Any?>, callback = RecastCallback { nmp, rmk ->
                 newMap[forKey] = nmp
-                callback(newMap, rmk)
+                callback.accept(newMap, rmk)
             }, transformer = transformer)
         }
     }

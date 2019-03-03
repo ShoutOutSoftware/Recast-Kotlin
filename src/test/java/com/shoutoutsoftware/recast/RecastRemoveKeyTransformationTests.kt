@@ -1,5 +1,6 @@
 package com.shoutoutsoftware.recast
 
+import com.shoutoutsoftware.recast.callback.RecastCallback
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -14,7 +15,7 @@ class RecastRemoveKeyTransformationTests {
     fun testEmptyMapTransformation() {
         val map = HashMap<String, Any?>()
         var numberOfCallbacks = 0
-        Recast().transformByRemovingKeys(map, callback = { _, _ ->
+        Recast().transformByRemovingKeys(map, callback = RecastCallback { _, _ ->
             numberOfCallbacks++
         })
         assertEquals(numberOfCallbacks, 0)
@@ -25,7 +26,7 @@ class RecastRemoveKeyTransformationTests {
         val map = hashMapOf<String, Any?>("key" to "value")
         var numberOfCallbacks = 0
 
-        Recast().transformByRemovingKeys(map, callback = { newMap, alteredKey ->
+        Recast().transformByRemovingKeys(map, callback = RecastCallback { newMap, alteredKey ->
             assertNull(newMap["key"])
             numberOfCallbacks++
         })
@@ -37,27 +38,19 @@ class RecastRemoveKeyTransformationTests {
         val map = java.util.HashMap<String, Any?>()
         map["string"] = "value"
         map["multiNestedMap"] =
-            hashMapOf("subMap1" to hashMapOf("subMap2" to hashMapOf("multiNestedString" to "x", "multiNestedInt" to 1)))
+                hashMapOf("subMap1" to hashMapOf("subMap2" to hashMapOf("multiNestedString" to "x", "multiNestedInt" to 1)))
 
         var numberOfCallbacks = 0
 
-        Recast().transformByRemovingKeys(map, callback = { newMap, alteredKey ->
+        Recast().transformByRemovingKeys(map, callback = RecastCallback { newMap, alteredKey ->
             when (alteredKey) {
                 "string" -> {
                     assertFalse(newMap.keys.contains("string"))
                     assertTrue(newMap.keys.contains("multiNestedMap"))
                     assertTrue((newMap["multiNestedMap"] as HashMap<*, *>).keys.contains("subMap1"))
                     assertTrue(((newMap["multiNestedMap"] as HashMap<*, *>)["subMap1"] as HashMap<*, *>).keys.contains("subMap2"))
-                    assertTrue(
-                        (((newMap["multiNestedMap"] as HashMap<*, *>)["subMap1"] as HashMap<*, *>)["subMap2"] as HashMap<*, *>).containsKey(
-                            "multiNestedString"
-                        )
-                    )
-                    assertTrue(
-                        (((newMap["multiNestedMap"] as HashMap<*, *>)["subMap1"] as HashMap<*, *>)["subMap2"] as HashMap<*, *>).containsKey(
-                            "multiNestedInt"
-                        )
-                    )
+                    assertTrue((((newMap["multiNestedMap"] as HashMap<*, *>)["subMap1"] as HashMap<*, *>)["subMap2"] as HashMap<*, *>).containsKey("multiNestedString"))
+                    assertTrue((((newMap["multiNestedMap"] as HashMap<*, *>)["subMap1"] as HashMap<*, *>)["subMap2"] as HashMap<*, *>).containsKey("multiNestedInt"))
                 }
                 "multiNestedMap" -> {
                     assertTrue(newMap.keys.contains("string"))
@@ -73,9 +66,9 @@ class RecastRemoveKeyTransformationTests {
                     assertTrue(newMap.keys.contains("multiNestedMap"))
                     assertTrue((newMap["multiNestedMap"] as HashMap<*, *>).keys.contains("subMap1"))
                     assertFalse(
-                        ((newMap["multiNestedMap"] as HashMap<*, *>)["subMap1"] as HashMap<*, *>).keys.contains(
-                            "subMap2"
-                        )
+                            ((newMap["multiNestedMap"] as HashMap<*, *>)["subMap1"] as HashMap<*, *>).keys.contains(
+                                    "subMap2"
+                            )
                     )
                 }
                 "multiNestedString" -> {
@@ -83,33 +76,19 @@ class RecastRemoveKeyTransformationTests {
                     assertTrue(newMap.keys.contains("multiNestedMap"))
                     assertTrue((newMap["multiNestedMap"] as HashMap<*, *>).keys.contains("subMap1"))
                     assertTrue(((newMap["multiNestedMap"] as HashMap<*, *>)["subMap1"] as HashMap<*, *>).keys.contains("subMap2"))
-                    assertFalse(
-                        (((newMap["multiNestedMap"] as HashMap<*, *>)["subMap1"] as HashMap<*, *>)["subMap2"] as HashMap<*, *>).containsKey(
-                            "multiNestedString"
-                        )
-                    )
-                    assertTrue(
-                        (((newMap["multiNestedMap"] as HashMap<*, *>)["subMap1"] as HashMap<*, *>)["subMap2"] as HashMap<*, *>).containsKey(
-                            "multiNestedInt"
-                        )
-                    )
+                    assertFalse((((newMap["multiNestedMap"] as HashMap<*, *>)["subMap1"] as HashMap<*, *>)["subMap2"] as HashMap<*, *>).containsKey("multiNestedString"))
+                    assertTrue((((newMap["multiNestedMap"] as HashMap<*, *>)["subMap1"] as HashMap<*, *>)["subMap2"] as HashMap<*, *>).containsKey("multiNestedInt"))
                 }
+
                 "multiNestedInt" -> {
                     assertTrue(newMap.keys.contains("string"))
                     assertTrue(newMap.keys.contains("multiNestedMap"))
                     assertTrue((newMap["multiNestedMap"] as HashMap<*, *>).keys.contains("subMap1"))
                     assertTrue(((newMap["multiNestedMap"] as HashMap<*, *>)["subMap1"] as HashMap<*, *>).keys.contains("subMap2"))
-                    assertTrue(
-                        (((newMap["multiNestedMap"] as HashMap<*, *>)["subMap1"] as HashMap<*, *>)["subMap2"] as HashMap<*, *>).containsKey(
-                            "multiNestedString"
-                        )
-                    )
-                    assertFalse(
-                        (((newMap["multiNestedMap"] as HashMap<*, *>)["subMap1"] as HashMap<*, *>)["subMap2"] as HashMap<*, *>).containsKey(
-                            "multiNestedInt"
-                        )
-                    )
+                    assertTrue((((newMap["multiNestedMap"] as HashMap<*, *>)["subMap1"] as HashMap<*, *>)["subMap2"] as HashMap<*, *>).containsKey("multiNestedString"))
+                    assertFalse((((newMap["multiNestedMap"] as HashMap<*, *>)["subMap1"] as HashMap<*, *>)["subMap2"] as HashMap<*, *>).containsKey("multiNestedInt"))
                 }
+
             }
             numberOfCallbacks++
         })

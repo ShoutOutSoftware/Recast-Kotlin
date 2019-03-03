@@ -1,5 +1,6 @@
 package com.shoutoutsoftware.recast
 
+import com.shoutoutsoftware.recast.callback.RecastCallback
 import com.shoutoutsoftware.recast.exceptions.InvalidValueTypeException
 import com.shoutoutsoftware.recast.exceptions.NonStringKeyException
 import org.junit.Assert.assertEquals
@@ -19,7 +20,7 @@ class RecastExceptionCasesTests {
         val map = HashMap<String, Any?>()
         map["key"] = hashMapOf(1 to "val", true to "val")
         try {
-            Recast().transformByChangingValueTypes(map, callback = { _, _ -> })
+            Recast().transformByChangingValueTypes(map, callback = RecastCallback { _, _ -> })
         } catch (exception: NonStringKeyException) {
             val expectedErrorMessage = "Hash map: " + map["key"] + ".\n" +
                     "Looks like this hash map has non-string keys. The list of non-string keys is [1, true]"
@@ -35,7 +36,7 @@ class RecastExceptionCasesTests {
 
         map["key"] = hashMapOf(nonStringKeyOne to hashMapOf(true to "val"), "stringKey" to "val", nonStringKeyTwo to 54)
         try {
-            Recast().transformByChangingValueTypes(map, callback = { _, _ -> })
+            Recast().transformByChangingValueTypes(map, callback = RecastCallback { _, _ -> })
         } catch (exception: NonStringKeyException) {
             val subMap = map["key"] as HashMap<*, *>
             val expectedErrorMessage = "Hash map: " + subMap + ".\n" +
@@ -50,7 +51,7 @@ class RecastExceptionCasesTests {
         val key = "date"
         map[key] = Date()
         try {
-            Recast().transformByChangingValueTypes(map, callback = { _, _ -> })
+            Recast().transformByChangingValueTypes(map, callback = RecastCallback { _, _ -> })
         } catch (exception: InvalidValueTypeException) {
             val expectedErrorMessage = "The key \"$key\" has an invalid value type " + map[key]!!.javaClass.name
             assertEquals(expectedErrorMessage, exception.message)
