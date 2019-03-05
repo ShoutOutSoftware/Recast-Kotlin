@@ -37,8 +37,7 @@ class RecastRemoveKeyTransformationTests {
     fun testTransformationOfComplexHashMap() {
         val map = java.util.HashMap<String, Any?>()
         map["string"] = "value"
-        map["multiNestedMap"] =
-                hashMapOf("subMap1" to hashMapOf("subMap2" to hashMapOf("multiNestedString" to "x", "multiNestedInt" to 1)))
+        map["multiNestedMap"] = hashMapOf("subMap1" to hashMapOf("subMap2" to hashMapOf("multiNestedString" to "x", "multiNestedInt" to 1)))
 
         var numberOfCallbacks = 0
 
@@ -66,9 +65,9 @@ class RecastRemoveKeyTransformationTests {
                     assertTrue(newMap.keys.contains("multiNestedMap"))
                     assertTrue((newMap["multiNestedMap"] as HashMap<*, *>).keys.contains("subMap1"))
                     assertFalse(
-                            ((newMap["multiNestedMap"] as HashMap<*, *>)["subMap1"] as HashMap<*, *>).keys.contains(
-                                    "subMap2"
-                            )
+                        ((newMap["multiNestedMap"] as HashMap<*, *>)["subMap1"] as HashMap<*, *>).keys.contains(
+                            "subMap2"
+                        )
                     )
                 }
                 "multiNestedString" -> {

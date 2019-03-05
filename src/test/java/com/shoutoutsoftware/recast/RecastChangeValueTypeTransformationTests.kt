@@ -52,26 +52,11 @@ class RecastChangeValueTypeTransformationTests {
 
         Recast().transformByChangingValueTypes(map, callback = RecastCallback { newMap, key ->
 
-            ifKey(
-                key,
-                equals = "string",
-                assert = !newMap["string"].isString(),
-                elseAssert = newMap["string"].isString()
-            )
+            ifKey(key, equals = "string", assert = !newMap["string"].isString(), elseAssert = newMap["string"].isString())
             ifKey(key, equals = "int", assert = !newMap["int"].isInt(), elseAssert = newMap["int"].isInt())
             ifKey(key, equals = "float", assert = !newMap["float"].isFloat(), elseAssert = newMap["float"].isFloat())
-            ifKey(
-                key,
-                equals = "double",
-                assert = !newMap["double"].isDouble(),
-                elseAssert = newMap["double"].isDouble()
-            )
-            ifKey(
-                key,
-                equals = "boolean",
-                assert = !newMap["boolean"].isBoolean(),
-                elseAssert = newMap["boolean"].isBoolean()
-            )
+            ifKey(key, equals = "double", assert = !newMap["double"].isDouble(), elseAssert = newMap["double"].isDouble())
+            ifKey(key, equals = "boolean", assert = !newMap["boolean"].isBoolean(), elseAssert = newMap["boolean"].isBoolean())
             ifKey(key, equals = "array", assert = !newMap["array"].isArray(), elseAssert = newMap["array"].isArray())
 
             if (key == "map") {
@@ -79,12 +64,7 @@ class RecastChangeValueTypeTransformationTests {
             } else {
                 assertTrue(newMap["map"].isHashMap())
                 val subMap = newMap["map"] as HashMap<*, *>
-                ifKey(
-                    key,
-                    equals = "subStr",
-                    assert = !subMap["subStr"].isString(),
-                    elseAssert = subMap["subStr"].isString()
-                )
+                ifKey(key, equals = "subStr", assert = !subMap["subStr"].isString(), elseAssert = subMap["subStr"].isString())
                 ifKey(key, equals = "subInt", assert = !subMap["subInt"].isInt(), elseAssert = subMap["subInt"].isInt())
             }
 
@@ -106,12 +86,7 @@ class RecastChangeValueTypeTransformationTests {
                         assertTrue(subMap1["subMap2"].isHashMap())
 
                         val subMap2 = subMap1["subMap2"] as HashMap<*, *>
-                        ifKey(
-                            key,
-                            equals = "s",
-                            assert = !subMap2["s"].isString(),
-                            elseAssert = subMap2["s"].isString()
-                        )
+                        ifKey(key, equals = "s", assert = !subMap2["s"].isString(), elseAssert = subMap2["s"].isString())
                         ifKey(key, equals = "i", assert = !subMap2["i"].isInt(), elseAssert = subMap2["i"].isInt())
                     }
 
