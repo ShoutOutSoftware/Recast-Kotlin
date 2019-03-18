@@ -14,83 +14,102 @@ import com.shoutoutsoftware.recast.transformers.ValueTypeChanger
 
 class Recast {
 
+    private lateinit var transformer: Transformer
+    private var keysToAlter: List<String> = listOf()
+
+
     //MARK: Functions to transform all values
 
     fun transformByRemovingKeys(map: HashMap<String, Any?>, callback: RecastCallback) {
-        transform(map, callback, KeyValueRemover())
+        transformer = KeyValueRemover()
+        transform(map, callback)
     }
 
     fun transformByChangingValueTypes(map: HashMap<String, Any?>, callback: RecastCallback) {
-        transform(map, callback, ValueTypeChanger())
+        transformer = ValueTypeChanger()
+        transform(map, callback)
     }
 
     fun transformByNullifyingValues(map: HashMap<String, Any?>, callback: RecastCallback) {
-        transform(map, callback, ValueNullifyer())
-    }
-
-    private fun transform(map: HashMap<String, Any?>, callback: RecastCallback, transformer: Transformer) {
-        if (map.isEmpty()) return
-
-        for (key in map.keys) {
-            transformValue(forKey = key, inMap = map, callback = callback, transformer = transformer)
-        }
-    }
-
-    private fun transformValue(forKey: String, inMap: HashMap<String, Any?>, callback: RecastCallback, transformer: Transformer) {
-        val newMap = HashMap(inMap)
-        transformer.transform(newMap, forKey)
-        callback.accept(newMap, forKey)
-
-        val value = inMap[forKey]
-        if (isAStringKeyHashMap(value)) {
-            @Suppress("UNCHECKED_CAST")
-            transform(value as HashMap<String, Any?>, callback = RecastCallback { nmp, rmk ->
-                newMap[forKey] = nmp
-                callback.accept(newMap, rmk)
-            }, transformer = transformer)
-        }
+        transformer = ValueNullifyer()
+        transform(map, callback)
     }
 
     //MARK: Functions to transform values for the keys provided
 
     fun transformByRemovingKeys(map: HashMap<String, Any?>, keysToAlter: List<String>, callback: RecastCallback) {
-        transform(map, keysToAlter, callback, KeyValueRemover())
+        transformer = KeyValueRemover()
+        this.keysToAlter = keysToAlter
+        transform(map, callback)
     }
 
     fun transformByChangingValueTypes(map: HashMap<String, Any?>, keysToAlter: List<String>, callback: RecastCallback) {
-        transform(map, keysToAlter, callback, ValueTypeChanger())
+        transformer = ValueTypeChanger()
+        this.keysToAlter = keysToAlter
+        transform(map, callback)
     }
 
     fun transformByNullifyingValues(map: HashMap<String, Any?>, keysToAlter: List<String>, callback: RecastCallback) {
-        transform(map, keysToAlter, callback, ValueNullifyer())
+        transformer = ValueNullifyer()
+        this.keysToAlter = keysToAlter
+        transform(map, callback)
     }
 
-    private fun transform(map: HashMap<String, Any?>, keysToAlter: List<String>, callback: RecastCallback, transformer: Transformer) {
+    private fun transform(map: HashMap<String, Any?>, callback: RecastCallback) {
         if (map.isEmpty()) return
 
         for (key in map.keys) {
-            transformValue(forKey = key, inMap = map, keysToAlter = keysToAlter, callback = callback, transformer = transformer)
+            transformValue(forKey = key, inMap = map, callback = callback)
         }
     }
 
-    private fun transformValue(forKey: String, inMap: HashMap<String, Any?>, keysToAlter: List<String>, callback: RecastCallback, transformer: Transformer) {
-        val newMap = HashMap(inMap)
-        if (keysToAlter.contains(forKey)) {
-            transformer.transform(newMap, forKey)
-            callback.accept(newMap, forKey)
+    @Suppress("UNCHECKED_CAST")
+    private fun transformValue(forKey: String, inMap: HashMap<String, Any?>, callback: RecastCallback) {
+        val mapToAlter = HashMap(inMap)
+        if (shouldTransformKey(forKey, keysToAlter)) {
+            val alteredMap = transformer.transform(mapToAlter, forKey)
+            callback.accept(alteredMap, forKey)
         }
 
-        val value = inMap[forKey]
+        //Checking if the value is a complex type - HashMap, Array, or List
+        val value = mapToAlter[forKey]
+
         if (isAStringKeyHashMap(value)) {
-            @Suppress("UNCHECKED_CAST")
-            transform(value as HashMap<String, Any?>, keysToAlter, callback = RecastCallback { nmp, rmk ->
-                newMap[forKey] = nmp
-                callback.accept(newMap, rmk)
-            }, transformer = transformer)
+            transformNestedMap(value as HashMap<String, Any?>, forKey, mapToAlter, callback)
+        } else if (isAStringKeyHashMapArray(value)) {
+            transformHashMapArray(value as Array<HashMap<*, *>>, forKey, mapToAlter, callback)
         }
     }
 
-    //MARK: Util function to check of a value is a string key Hash Map
+    private fun shouldTransformKey(key: String, keysToAlter: List<String>): Boolean {
+        if (keysToAlter.isEmpty()) {
+            return true
+        } else {
+            return keysToAlter.contains(key)
+        }
+    }
+
+    private fun transformNestedMap(nestedMap: HashMap<String, Any?>, nestedMapKey: String, mapToAlter: HashMap<String, Any?>, callback: RecastCallback) {
+        transform(nestedMap, callback = RecastCallback { alteredMap, keyAltered ->
+            mapToAlter[nestedMapKey] = alteredMap
+            callback.accept(mapToAlter, keyAltered)
+        })
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun transformHashMapArray(arrayOfHashMaps: Array<HashMap<*, *>>, arrayKey: String, mapToAlter: HashMap<String, Any?>, callback: RecastCallback) {
+        for (i in 0 until arrayOfHashMaps.size) {
+            val map = arrayOfHashMaps[i]
+            transform(map as HashMap<String, Any?>, callback = RecastCallback { alteredMap, keyAltered ->
+                val newArray = arrayOfHashMaps.copyOf()
+                newArray[i] = alteredMap
+                mapToAlter[arrayKey] = newArray
+                callback.accept(mapToAlter, keyAltered)
+            })
+        }
+    }
+
+    //MARK: Util function to check if a value is a string-key HashMap
 
     @Throws
     private fun isAStringKeyHashMap(value: Any?): Boolean {
@@ -110,5 +129,24 @@ class Recast {
         return false
     }
 
+    //MARK: Util function to check of a value is a string-key HashMap Array
+
+    @Throws
+    private fun isAStringKeyHashMapArray(value: Any?): Boolean {
+        if (value is Array<*>) {
+            val array: Array<*> = value
+
+            if (array.isEmpty()) return false
+
+            for (item in array) {
+                if (item !is HashMap<*, *> || !isAStringKeyHashMap(item)) {
+                    return false
+                }
+            }
+            return true
+        } else {
+            return false
+        }
+    }
 
 }

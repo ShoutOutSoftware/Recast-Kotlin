@@ -6,8 +6,11 @@ package com.shoutoutsoftware.recast.transformers
  */
 
 class KeyValueRemover : Transformer {
+
     override fun transform(map: HashMap<String, Any?>, keyToAlter: String): HashMap<String, Any?> {
-        map.remove(keyToAlter)
-        return map
+        val alteredMap = HashMap(map)
+        alteredMap.remove(keyToAlter)
+        return alteredMap
     }
+
 }

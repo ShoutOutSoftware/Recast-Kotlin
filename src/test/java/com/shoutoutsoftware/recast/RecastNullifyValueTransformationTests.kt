@@ -1,7 +1,6 @@
 package com.shoutoutsoftware.recast
 
 import com.shoutoutsoftware.recast.callback.RecastCallback
-import org.junit.Assert
 import org.junit.Assert.*
 import org.junit.Test
 import java.util.*
@@ -35,6 +34,7 @@ class RecastNullifyValueTransformationTests {
         assertEquals(numberOfCallbacks, 1)
     }
 
+    @Suppress("UNCHECKED_CAST")
     @Test
     fun testTransformationOfaComplexHashMap() {
         val map = java.util.HashMap<String, Any?>()
@@ -45,70 +45,172 @@ class RecastNullifyValueTransformationTests {
         map["map"] = hashMapOf("subStr" to "x", "subInt" to 1)
         map["boolean"] = false
         map["array"] = arrayOf(1, 2, 3, 4)
+        map["arrayOfMaps"] = arrayOf(
+            hashMapOf("arraySubKeyOne" to "arraySubValueOne"),
+            hashMapOf("arraySubKeyTwo" to "arraySubValueTwo"),
+            hashMapOf("arraySubKeyThree" to hashMapOf("arrayInnerKeyOne" to "arrayInnerValueOne"))
+        )
         map["multiNestedMap"] = hashMapOf("subMap1" to hashMapOf("subMap2" to hashMapOf("s" to "x", "i" to 1)))
         map["mapWithNull"] = hashMapOf("null" to null)
         var numberOfCallbacks = 0
 
-        Recast().transformByNullifyingValues(map, callback = RecastCallback { newMap, key ->
+        Recast().transformByNullifyingValues(map, callback = RecastCallback { alteredMap, key ->
+            if (key == "string") assertNull(alteredMap["string"])
+            else assertNotNull(alteredMap["string"])
 
-            ifKey(key, equals = "string", assertNull = newMap["string"], elseNotNull = newMap["string"])
-            ifKey(key, equals = "int", assertNull = newMap["int"], elseNotNull = newMap["int"])
-            ifKey(key, equals = "float", assertNull = newMap["float"], elseNotNull = newMap["float"])
-            ifKey(key, equals = "double", assertNull = newMap["double"], elseNotNull = newMap["double"])
-            ifKey(key, equals = "boolean", assertNull = newMap["boolean"], elseNotNull = newMap["boolean"])
-            ifKey(key, equals = "array", assertNull = newMap["array"], elseNotNull = newMap["array"])
+            if (key == "int") assertNull(alteredMap["int"])
+            else assertNotNull(alteredMap["int"])
 
-            if (key == "map") {
-                assertNull(newMap["map"])
-            } else {
-                assertNotNull(newMap["map"])
-                val subMap = newMap["map"] as HashMap<*, *>
-                ifKey(key, equals = "subStr", assertNull = subMap["subStr"], elseNotNull = subMap["subStr"])
-                ifKey(key, equals = "subInt", assertNull = subMap["subInt"], elseNotNull = subMap["subInt"])
+            if (key == "float") assertNull(alteredMap["float"])
+            else assertNotNull(alteredMap["float"])
+
+            if (key == "double") assertNull(alteredMap["double"])
+            else assertNotNull(alteredMap["double"])
+
+            if (key == "boolean") assertNull(alteredMap["boolean"])
+            else assertNotNull(alteredMap["boolean"])
+
+            if (key == "array") assertNull(alteredMap["array"])
+            else assertNotNull(alteredMap["array"])
+
+            if (key == "arrayOfMaps") assertNull(alteredMap["arrayOfMaps"])
+            else assertNotNull(alteredMap["arrayOfMaps"])
+
+
+            if (key == "arraySubKeyOne") {
+                val arrayOfMaps = alteredMap["arrayOfMaps"] as Array<HashMap<*, *>>
+                val arrayMapOne = arrayOfMaps[0]["arraySubKeyOne"]
+                assertNull(arrayMapOne)
+            } else if (key != "arrayOfMaps") {
+                val arrayOfMaps = alteredMap["arrayOfMaps"] as Array<HashMap<*, *>>
+                val arrayMapOne = arrayOfMaps[0]["arraySubKeyOne"]
+                assertNotNull(arrayMapOne)
             }
 
-            if (key == "multiNestedMap") {
-                assertNull(newMap["multiNestedMap"])
+
+            if (key == "arraySubKeyTwo") {
+                val arrayOfMaps = alteredMap["arrayOfMaps"] as Array<HashMap<*, *>>
+                val arrayMapTwo = arrayOfMaps[1]["arraySubKeyTwo"]
+                assertNull(arrayMapTwo)
+            } else if (key != "arrayOfMaps") {
+                val arrayOfMaps = alteredMap["arrayOfMaps"] as Array<HashMap<*, *>>
+                val arrayMapTwo = arrayOfMaps[1]["arraySubKeyTwo"]
+                assertNotNull(arrayMapTwo)
+            }
+
+
+            if (key == "arraySubKeyThree") {
+                val arrayOfMaps = alteredMap["arrayOfMaps"] as Array<HashMap<*, *>>
+                val arrayMapThree = arrayOfMaps[2]["arraySubKeyThree"]
+                assertNull(arrayMapThree)
+            } else if (key != "arrayOfMaps") {
+                val arrayOfMaps = alteredMap["arrayOfMaps"] as Array<HashMap<*, *>>
+                val arrayMapThree = arrayOfMaps[2]["arraySubKeyThree"]
+                assertNotNull(arrayMapThree)
+            }
+
+
+            if (key == "arrayInnerKeyOne") {
+                val arrayOfMaps = alteredMap["arrayOfMaps"] as Array<HashMap<*, *>>
+                val arrayMapThree = arrayOfMaps[2]["arraySubKeyThree"] as HashMap<*, *>
+                val arrayInnerMapValue = arrayMapThree["arrayInnerKeyOne"];
+                assertNull(arrayInnerMapValue)
+            } else if (key != "arrayOfMaps" && key != "arraySubKeyThree") {
+                val arrayOfMaps = alteredMap["arrayOfMaps"] as Array<HashMap<*, *>>
+                val arrayMapThree = arrayOfMaps[2]["arraySubKeyThree"] as HashMap<*, *>
+                val arrayInnerMapValue = arrayMapThree["arrayInnerKeyOne"];
+                assertNotNull(arrayInnerMapValue)
+            }
+
+
+            if (key == "map") {
+                assertNull(alteredMap["map"])
             } else {
-                assertNotNull(newMap["multiNestedMap"])
+                assertNotNull(alteredMap["map"])
+            }
 
-                val subMap0 = newMap["multiNestedMap"] as HashMap<*, *>
-                if (key == "subMap1") {
-                    assertNull(subMap0["subMap1"])
-                } else {
-                    assertNotNull(subMap0["subMap1"])
+            if (key == "subStr") {
+                val subMap = alteredMap["map"] as HashMap<*, *>
+                assertNull(subMap["subStr"])
+            } else if (key != "map") {
+                val subMap = alteredMap["map"] as HashMap<*, *>
+                assertNotNull(subMap["subStr"])
+            }
 
-                    val subMap1 = subMap0["subMap1"] as HashMap<*, *>
-                    if (key == "subMap2") {
-                        assertNull(subMap1["subMap2"])
-                    } else {
-                        assertNotNull(subMap1["subMap2"])
+            if (key == "subInt") {
+                val subMap = alteredMap["map"] as HashMap<*, *>
+                assertNull(subMap["subInt"])
+            } else if (key != "map") {
+                val subMap = alteredMap["map"] as HashMap<*, *>
+                assertNotNull(subMap["subInt"])
+            }
 
-                        val subMap2 = subMap1["subMap2"] as HashMap<*, *>
-                        ifKey(key, equals = "s", assertNull = subMap2["s"], elseNotNull = subMap2["s"])
-                        ifKey(key, equals = "i", assertNull = subMap2["i"], elseNotNull = subMap2["i"])
-                    }
 
-                }
+            if (key == "multiNestedMap") {
+                assertNull(alteredMap["multiNestedMap"])
+            } else {
+                assertNotNull(alteredMap["multiNestedMap"])
+            }
+
+            if (key == "subMap1") {
+                val subMap = alteredMap["multiNestedMap"] as HashMap<*, *>
+                assertNull(subMap["subMap1"])
+            } else if (key != "multiNestedMap") {
+                val subMap = alteredMap["multiNestedMap"] as HashMap<*, *>
+                assertNotNull(subMap["subMap1"])
+            }
+
+            if (key == "subMap2") {
+                val subMap = alteredMap["multiNestedMap"] as HashMap<*, *>
+                val subMap1 = subMap["subMap1"] as HashMap<*, *>
+                assertNull(subMap1["subMap2"])
+            } else if (key != "multiNestedMap" && key != "subMap1") {
+                val subMap = alteredMap["multiNestedMap"] as HashMap<*, *>
+                val subMap1 = subMap["subMap1"] as HashMap<*, *>
+                assertNotNull(subMap1["subMap2"])
+            }
+
+            if (key == "s") {
+                val subMap = alteredMap["multiNestedMap"] as HashMap<*, *>
+                val subMap1 = subMap["subMap1"] as HashMap<*, *>
+                val subMap2 = subMap1["subMap2"] as HashMap<*, *>
+                assertNull(subMap2["s"])
+            } else if (key != "multiNestedMap" && key != "subMap1" && key != "subMap2") {
+                val subMap = alteredMap["multiNestedMap"] as HashMap<*, *>
+                val subMap1 = subMap["subMap1"] as HashMap<*, *>
+                val subMap2 = subMap1["subMap2"] as HashMap<*, *>
+                assertNotNull(subMap2["s"])
+            }
+
+            if (key == "i") {
+                val subMap = alteredMap["multiNestedMap"] as HashMap<*, *>
+                val subMap1 = subMap["subMap1"] as HashMap<*, *>
+                val subMap2 = subMap1["subMap2"] as HashMap<*, *>
+                assertNull(subMap2["i"])
+            } else if (key != "multiNestedMap" && key != "subMap1" && key != "subMap2") {
+                val subMap = alteredMap["multiNestedMap"] as HashMap<*, *>
+                val subMap1 = subMap["subMap1"] as HashMap<*, *>
+                val subMap2 = subMap1["subMap2"] as HashMap<*, *>
+                assertNotNull(subMap2["i"])
             }
 
             if (key == "mapWithNull") {
-                assertNull(newMap["mapWithNull"])
+                assertNull(alteredMap["mapWithNull"])
             } else {
-                assertNotNull(newMap["mapWithNull"])
-                val subMap = newMap["mapWithNull"] as HashMap<*, *>
-                assertNull(subMap["null"])
+                assertNotNull(alteredMap["mapWithNull"])
+            }
+
+            if (key == "null") {
+                val nullMap = alteredMap["mapWithNull"] as HashMap<*, *>
+                assertNull(nullMap["null"])
+            } else if (key != "mapWithNull") {
+                val nullMap = alteredMap["mapWithNull"] as HashMap<*, *>
+                assertNull(nullMap["null"])
             }
 
             numberOfCallbacks++
         })
-        assertEquals(numberOfCallbacks, 16)
-    }
-
-    private fun ifKey(key: String, equals: String, assertNull: Any?, elseNotNull: Any?) = if (key == equals) {
-        Assert.assertNull(assertNull)
-    } else {
-        Assert.assertNotNull(elseNotNull)
+        assertEquals(numberOfCallbacks, 21)
     }
 
 }
