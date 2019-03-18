@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.shoutoutsoftware'
-version '0.0.3'
+version '0.0.4'
 
 sourceCompatibility = 1.8
 
@@ -37,7 +37,7 @@ bintray {
         vcsUrl = 'https://github.com/ShoutOutSoftware/Recast-Kotlin.git'
         //noinspection GroovyAssignabilityCheck
         version {
-            name = '0.0.3'
+            name = '0.0.4'
             desc = 'A lightweight HashMap mutation library'
         }
     }
