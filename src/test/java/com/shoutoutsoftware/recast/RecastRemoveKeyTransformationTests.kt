@@ -44,6 +44,11 @@ class RecastRemoveKeyTransformationTests {
             hashMapOf("arraySubKeyTwo" to "arraySubValueTwo"),
             hashMapOf("arraySubKeyThree" to hashMapOf("arrayInnerKeyOne" to "arrayInnerValueOne"))
         )
+        map["listOfMaps"] = listOf(
+            hashMapOf("listSubKeyOne" to "listSubValueOne"),
+            hashMapOf("listSubKeyTwo" to "listSubValueTwo"),
+            hashMapOf("listSubKeyThree" to hashMapOf("listInnerKeyOne" to "listInnerValueOne"))
+        )
 
         var numberOfCallbacks = 0
 
@@ -144,9 +149,56 @@ class RecastRemoveKeyTransformationTests {
             }
 
 
+            if (keyAltered == "listOfMaps") assertFalse(alteredMap.containsKey("listOfMaps"))
+            else assertTrue(alteredMap.containsKey("listOfMaps"))
+
+
+            if (keyAltered == "listSubKeyOne") {
+                val listOfMaps = alteredMap["listOfMaps"] as List<java.util.HashMap<*, *>>
+                val listMapOne = listOfMaps[0]
+                assertFalse(listMapOne.containsKey("listSubKeyOne"))
+            } else if (keyAltered != "listOfMaps") {
+                val listOfMaps = alteredMap["listOfMaps"] as List<java.util.HashMap<*, *>>
+                val listMapOne = listOfMaps[0]
+                assertTrue(listMapOne.containsKey("listSubKeyOne"))
+            }
+
+
+            if (keyAltered == "listSubKeyTwo") {
+                val listOfMaps = alteredMap["listOfMaps"] as List<java.util.HashMap<*, *>>
+                val listMapTwo = listOfMaps[1]
+                assertFalse(listMapTwo.containsKey("listSubKeyTwo"))
+            } else if (keyAltered != "listOfMaps") {
+                val listOfMaps = alteredMap["listOfMaps"] as List<java.util.HashMap<*, *>>
+                val listMapTwo = listOfMaps[1]
+                assertTrue(listMapTwo.containsKey("listSubKeyTwo"))
+            }
+
+
+            if (keyAltered == "listSubKeyThree") {
+                val listOfMaps = alteredMap["listOfMaps"] as List<java.util.HashMap<*, *>>
+                val listMapThree = listOfMaps[2]
+                assertFalse(listMapThree.containsKey("listSubKeyThree"))
+            } else if (keyAltered != "listOfMaps") {
+                val listOfMaps = alteredMap["listOfMaps"] as List<java.util.HashMap<*, *>>
+                val listMapThree = listOfMaps[2]
+                assertTrue(listMapThree.containsKey("listSubKeyThree"))
+            }
+
+
+            if (keyAltered == "listInnerKeyOne") {
+                val listOfMaps = alteredMap["listOfMaps"] as List<java.util.HashMap<*, *>>
+                val listMapThree = listOfMaps[2]["listSubKeyThree"] as java.util.HashMap<*, *>
+                assertFalse(listMapThree.containsKey("listInnerKeyOne"))
+            } else if (keyAltered != "listOfMaps" && keyAltered != "listSubKeyThree") {
+                val listOfMaps = alteredMap["listOfMaps"] as List<java.util.HashMap<*, *>>
+                val listMapThree = listOfMaps[2]["listSubKeyThree"] as java.util.HashMap<*, *>
+                assertTrue(listMapThree.containsKey("listInnerKeyOne"))
+            }
+
             numberOfCallbacks++
         })
-        assertEquals(numberOfCallbacks, 11)
+        assertEquals(numberOfCallbacks, 16)
     }
 
 }

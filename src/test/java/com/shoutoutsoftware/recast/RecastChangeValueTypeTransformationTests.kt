@@ -52,6 +52,11 @@ class RecastChangeValueTypeTransformationTests {
             hashMapOf("arraySubKeyTwo" to "arraySubValueTwo"),
             hashMapOf("arraySubKeyThree" to hashMapOf("arrayInnerKeyOne" to "arrayInnerValueOne"))
         )
+        map["listOfMaps"] = listOf(
+            hashMapOf("listSubKeyOne" to "listSubValueOne"),
+            hashMapOf("listSubKeyTwo" to "listSubValueTwo"),
+            hashMapOf("listSubKeyThree" to hashMapOf("listInnerKeyOne" to "listInnerValueOne"))
+        )
         map["multiNestedMap"] = hashMapOf("subMap1" to hashMapOf("subMap2" to hashMapOf("s" to "x", "i" to 1)))
         map["mapWithNull"] = hashMapOf("null" to null)
         var numberOfCallbacks = 0
@@ -124,6 +129,54 @@ class RecastChangeValueTypeTransformationTests {
                 assertTrue(arrayInnerMapValue.isString())
             }
 
+            if (key == "listOfMaps") assertFalse(alteredMap["listOfMaps"].isList())
+            else assertTrue(alteredMap["listOfMaps"].isList())
+
+
+            if (key == "listSubKeyOne") {
+                val listOfMaps = alteredMap["listOfMaps"] as List<HashMap<*, *>>
+                val listMapOne = listOfMaps[0]["listSubKeyOne"]
+                assertFalse(listMapOne.isString())
+            } else if (key != "listOfMaps") {
+                val listOfMaps = alteredMap["listOfMaps"] as List<HashMap<*, *>>
+                val listMapOne = listOfMaps[0]["listSubKeyOne"]
+                assertTrue(listMapOne.isString())
+            }
+
+
+            if (key == "listSubKeyTwo") {
+                val listOfMaps = alteredMap["listOfMaps"] as List<HashMap<*, *>>
+                val listMapTwo = listOfMaps[1]["listSubKeyTwo"]
+                assertFalse(listMapTwo.isString())
+            } else if (key != "listOfMaps") {
+                val listOfMaps = alteredMap["listOfMaps"] as List<HashMap<*, *>>
+                val listMapTwo = listOfMaps[1]["listSubKeyTwo"]
+                assertTrue(listMapTwo.isString())
+            }
+
+
+            if (key == "listSubKeyThree") {
+                val listOfMaps = alteredMap["listOfMaps"] as List<HashMap<*, *>>
+                val listMapThree = listOfMaps[2]["listSubKeyThree"]
+                assertFalse(listMapThree.isHashMap())
+            } else if (key != "listOfMaps") {
+                val listOfMaps = alteredMap["listOfMaps"] as List<HashMap<*, *>>
+                val listMapThree = listOfMaps[2]["listSubKeyThree"]
+                assertTrue(listMapThree.isHashMap())
+            }
+
+
+            if (key == "listInnerKeyOne") {
+                val listOfMaps = alteredMap["listOfMaps"] as List<HashMap<*, *>>
+                val listMapThree = listOfMaps[2]["listSubKeyThree"] as HashMap<*, *>
+                val listInnerMapValue = listMapThree["listInnerKeyOne"];
+                assertFalse(listInnerMapValue.isString())
+            } else if (key != "listOfMaps" && key != "listSubKeyThree") {
+                val listOfMaps = alteredMap["listOfMaps"] as List<HashMap<*, *>>
+                val listMapThree = listOfMaps[2]["listSubKeyThree"] as HashMap<*, *>
+                val listInnerMapValue = listMapThree["listInnerKeyOne"];
+                assertTrue(listInnerMapValue.isString())
+            }
 
             if (key == "map") {
                 assertFalse(alteredMap["map"].isHashMap())
@@ -212,7 +265,7 @@ class RecastChangeValueTypeTransformationTests {
 
             numberOfCallbacks++
         })
-        assertEquals(numberOfCallbacks, 21)
+        assertEquals(numberOfCallbacks, 26)
     }
 
 }

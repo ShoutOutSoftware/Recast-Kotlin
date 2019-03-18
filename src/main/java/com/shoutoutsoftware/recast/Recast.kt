@@ -78,6 +78,8 @@ class Recast {
             transformNestedMap(value as HashMap<String, Any?>, forKey, mapToAlter, callback)
         } else if (isAStringKeyHashMapArray(value)) {
             transformHashMapArray(value as Array<HashMap<*, *>>, forKey, mapToAlter, callback)
+        } else if (isAStringKeyHashMapList(value)) {
+            transformHashMapList(value as List<HashMap<*, *>>, forKey, mapToAlter, callback)
         }
     }
 
@@ -104,6 +106,19 @@ class Recast {
                 val newArray = arrayOfHashMaps.copyOf()
                 newArray[i] = alteredMap
                 mapToAlter[arrayKey] = newArray
+                callback.accept(mapToAlter, keyAltered)
+            })
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun transformHashMapList(listOfHashMaps: List<HashMap<*, *>>, listKey: String, mapToAlter: HashMap<String, Any?>, callback: RecastCallback) {
+        for (i in 0 until listOfHashMaps.size) {
+            val map = listOfHashMaps[i]
+            transform(map as HashMap<String, Any?>, callback = RecastCallback { alteredMap, keyAltered ->
+                val newList = listOfHashMaps.toMutableList()
+                newList[i] = alteredMap
+                mapToAlter[listKey] = newList
                 callback.accept(mapToAlter, keyAltered)
             })
         }
@@ -139,6 +154,26 @@ class Recast {
             if (array.isEmpty()) return false
 
             for (item in array) {
+                if (item !is HashMap<*, *> || !isAStringKeyHashMap(item)) {
+                    return false
+                }
+            }
+            return true
+        } else {
+            return false
+        }
+    }
+
+    //MARK: Util function to check of a value is a string-key HashMap List
+
+    @Throws
+    private fun isAStringKeyHashMapList(value: Any?): Boolean {
+        if (value is List<*>) {
+            val list: List<*> = value
+
+            if (list.isEmpty()) return false
+
+            for (item in list) {
                 if (item !is HashMap<*, *> || !isAStringKeyHashMap(item)) {
                     return false
                 }
