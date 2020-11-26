@@ -4,11 +4,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/**
- * Created on 05 March 2019
- * Copyright © ShoutOut Software. All rights reserved.
- */
-
 class RecastTransformOnlySelectedKeysTest {
 
     @Test

@@ -4,11 +4,6 @@ import com.shoutoutsoftware.recast.callback.RecastCallback
 import org.junit.Assert.*
 import org.junit.Test
 
-/**
- * Created on 24 September 2017
- * Copyright © ShoutOut Software. All rights reserved.
- */
-
 class RecastRemoveKeyTransformationTests {
 
     @Test

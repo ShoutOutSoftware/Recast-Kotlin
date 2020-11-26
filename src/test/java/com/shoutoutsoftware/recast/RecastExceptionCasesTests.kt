@@ -9,11 +9,6 @@ import org.junit.Test
 import java.util.*
 import kotlin.collections.HashMap
 
-/**
- * Created 05 October 2017
- * Copyright © ShoutOut Software. All rights reserved.
- */
-
 class RecastExceptionCasesTests {
 
     @Test

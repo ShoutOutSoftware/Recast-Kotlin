@@ -7,11 +7,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Test
 
-/**
- * Created on 04 October 2017
- * Copyright © ShoutOut Software. All rights reserved.
- */
-
 class RecastChangeValueTypeTransformationTests {
 
     @Test

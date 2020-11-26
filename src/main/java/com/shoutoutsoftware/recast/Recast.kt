@@ -7,11 +7,6 @@ import com.shoutoutsoftware.recast.transformers.Transformer
 import com.shoutoutsoftware.recast.transformers.ValueNullifyer
 import com.shoutoutsoftware.recast.transformers.ValueTypeChanger
 
-/**
- * Created on 24 September 2017
- * Copyright © ShoutOut Software. All rights reserved.
- */
-
 class Recast {
 
     private lateinit var transformer: Transformer

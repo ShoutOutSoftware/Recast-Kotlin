@@ -1,10 +1,5 @@
 package com.shoutoutsoftware.recast.utils
 
-/**
- * Created on 07 October 2017
- * Copyright © ShoutOut Software. All rights reserved.
- */
-
 fun Any?.isString(): Boolean = this is String
 fun Any?.isInt(): Boolean = this is Int
 fun Any?.isFloat(): Boolean = this is Float
